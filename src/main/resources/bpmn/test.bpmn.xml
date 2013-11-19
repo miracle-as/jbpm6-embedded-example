@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<definitions id="Definition"
+             typeLanguage="http://www.java.com/javaTypes"
+             expressionLanguage="http://www.mvel.org/2.0"
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://www.omg.org/spec/BPMN/20100524/MODEL BPMN20.xsd"
+             xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI"
+             xmlns:dc="http://www.omg.org/spec/DD/20100524/DC"
+             xmlns:di="http://www.omg.org/spec/DD/20100524/DI"
+             xmlns:tns="http://www.jboss.org/drools"
+             targetNamespace="">
+
+  <itemDefinition id="_userIdItem" structureRef="String" />
+  <itemDefinition id="_descriptionItem" structureRef="String" />
+  <itemDefinition id="_dateItem" structureRef="String" />
+  <itemDefinition id="_resultItem" structureRef="String" />
+  <itemDefinition id="_commentItem" structureRef="String" />
+  <itemDefinition id="_resultUserItem" structureRef="String" />
+  <itemDefinition id="_resultManagerItem" structureRef="String" />
+
+
+  <process processType="Private" isExecutable="true" id="com.sample.HelloWorld" name="Hello World">
+
+    <property id="userId" itemSubjectRef="_userIdItem"/>
+    <property id="description" itemSubjectRef="_descriptionItem"/>
+    <property id="date" itemSubjectRef="_dateItem"/>
+    <property id="result" itemSubjectRef="_resultItem"/>
+    <property id="comment" itemSubjectRef="_commentItem"/>
+    <property id="resultUser" itemSubjectRef="_resultUserItem"/>
+    <property id="resultManager" itemSubjectRef="_resultManagerItem"/>
+
+
+    <startEvent id="_1" name="StartProcess"/>
+    <scriptTask id="_2" name="Hello">
+      <script>System.out.println("Hello Wxorld ")+kcontext.getVariable("userId");</script>
+    </scriptTask>
+
+    <userTask id="_3" name="Review" >
+      <ioSpecification>
+        <dataInput id="_2_descriptionInput" name="description" />
+        <dataInput id="_2_userIdInput" name="userId" />
+        <dataInput id="_2_dateInput" name="date" />
+        <dataInput id="_2_TaskNameInput" name="TaskName" />
+        <dataInput id="_2_GroupIdInput" name="GroupId" />
+        <dataOutput id="_2_commentOutput" name="comment" />
+        <dataOutput id="_2_outcomeOutput" name="outcome" />
+        <inputSet>
+          <dataInputRefs>_2_descriptionInput</dataInputRefs>
+          <dataInputRefs>_2_userIdInput</dataInputRefs>
+          <dataInputRefs>_2_dateInput</dataInputRefs>
+          <dataInputRefs>_2_TaskNameInput</dataInputRefs>
+          <dataInputRefs>_2_GroupIdInput</dataInputRefs>
+        </inputSet>
+        <outputSet>
+          <dataOutputRefs>_2_commentOutput</dataOutputRefs>
+          <dataOutputRefs>_2_outcomeOutput</dataOutputRefs>
+        </outputSet>
+      </ioSpecification>
+      <dataInputAssociation>
+        <sourceRef>description</sourceRef>
+        <targetRef>_2_descriptionInput</targetRef>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <sourceRef>userId</sourceRef>
+        <targetRef>_2_userIdInput</targetRef>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <sourceRef>date</sourceRef>
+        <targetRef>_2_dateInput</targetRef>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <targetRef>_2_TaskNameInput</targetRef>
+        <assignment>
+          <from xsi:type="tFormalExpression">Request Review</from>
+          <to xsi:type="tFormalExpression">_2_TaskNameInput</to>
+        </assignment>
+      </dataInputAssociation>
+      <dataInputAssociation>
+        <targetRef>_2_GroupIdInput</targetRef>
+        <assignment>
+          <from xsi:type="tFormalExpression">sales</from>
+          <to xsi:type="tFormalExpression">_2_GroupIdInput</to>
+        </assignment>
+      </dataInputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_2_commentOutput</sourceRef>
+        <targetRef>comment</targetRef>
+      </dataOutputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_2_outcomeOutput</sourceRef>
+        <targetRef>result</targetRef>
+      </dataOutputAssociation>
+      <potentialOwner>
+        <resourceAssignmentExpression>
+          <formalExpression></formalExpression>
+        </resourceAssignmentExpression>
+      </potentialOwner>
+    </userTask>
+
+  <!--  <userTask id="_3" name="Review">
+      <ioSpecification>
+        <dataInput id="_2_userIdInput" name="userId"/>
+        <dataOutput id="_2_commentOutput" name="comment"/>
+        <dataOutput id="_2_outcomeOutput" name="outcome"/>
+        <inputSet>
+          <dataInputRefs>_2_userIdInput</dataInputRefs>
+        </inputSet>
+        <outputSet>
+          <dataOutputRefs>_2_commentOutput</dataOutputRefs>
+          <dataOutputRefs>_2_outcomeOutput</dataOutputRefs>
+        </outputSet>
+      </ioSpecification>
+      <dataInputAssociation>
+        <sourceRef>userId</sourceRef>
+        <targetRef>_2_userIdInput</targetRef>
+      </dataInputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_2_commentOutput</sourceRef>
+        <targetRef>comment</targetRef>
+      </dataOutputAssociation>
+      <dataOutputAssociation>
+        <sourceRef>_2_outcomeOutput</sourceRef>
+        <targetRef>result</targetRef>
+      </dataOutputAssociation>
+      <potentialOwner>
+        <resourceAssignmentExpression>
+          <formalExpression></formalExpression>
+        </resourceAssignmentExpression>
+      </potentialOwner>
+    </userTask>-->
+
+    <endEvent id="_4" name="EndProcess">
+      <terminateEventDefinition/>
+    </endEvent>
+
+    <sequenceFlow id="_1-_2" sourceRef="_1" targetRef="_2"/>
+    <sequenceFlow id="_2-_3" sourceRef="_2" targetRef="_3"/>
+    <sequenceFlow id="_3-_4" sourceRef="_3" targetRef="_4"/>
+
+  </process>
+
+
+</definitions>
