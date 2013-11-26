@@ -48,16 +48,18 @@ object Main extends App with KieSupport {
         println("task " + task.getNames().mkString + "(" + task.getId() + ": " + task.getDescriptions().mkString + ")")
       println(" task initiator "+task.getPeopleAssignments.getTaskInitiator)
       println(" task assignables "+task.getPeopleAssignments.getPotentialOwners.mkString)
-        taskService.start(task.getId(), "sales-rep");
-        taskService.complete(task.getId(), "sales-rep", null);
+        taskService.start(task.getId(), "sales-rep")
+        taskService.complete(task.getId(), "sales-rep", null)
     }*/
-  val tasks: List[TaskSummary] = taskService.getTasksAssignedAsPotentialOwner("sales-rep", "en-UK").toList;
+  val tasks: List[TaskSummary] = taskService.getTasksAssignedAsPotentialOwner("sales-rep", "en-UK").toList
   tasks.map {
     task =>
       println("task " + task.getName() + "(" + task.getId() + ": " + task.getDescription + ")")
       //      println(" task initiator " + task.getPotentialOwners.mkString)
-      taskService.start(task.getId(), "sales-rep");
-      taskService.complete(task.getId(), "sales-rep", null);
+      taskService.start(task.getId(), "sales-rep")
+      taskService.complete(task.getId(), "sales-rep", null)
+    val fields = Map("x"->List[String]("y"))
+//    val tsks : List[TaskSummary] = taskService.getTasksByVariousFields(fields, true)
   }
 
   val pi3 = Option(ksession.getProcessInstance(pi.getId))
@@ -67,6 +69,8 @@ object Main extends App with KieSupport {
     println(s"task state ended ${varUserId(pi3.get)}")
   }
 
-  manager.disposeRuntimeEngine(runtime);
+  manager.disposeRuntimeEngine(runtime)
+  
+  System.exit(0)
 
 }

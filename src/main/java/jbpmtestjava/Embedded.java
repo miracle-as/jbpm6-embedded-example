@@ -20,6 +20,7 @@ import org.kie.internal.runtime.manager.RuntimeManagerFactory;
 import org.kie.internal.runtime.manager.context.EmptyContext;
 import org.kie.internal.task.api.UserGroupCallback;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,10 +39,24 @@ public class Embedded {
       Map<String, Object> params = new HashMap<String, Object>();
       params.put("userId", "krisv");
       params.put("description", "Need a new laptop computer");
+
+
       ProcessInstance processInstance = ksession.startProcess("com.sample.humantask", params);
 
       // "sales-rep" reviews request
       TaskService taskService = runtime.getTaskService();
+
+      if (false) {
+        Map<String, List<?>> query = new HashMap<String, List<?>>();
+        List<Object> lst = new ArrayList<Object>();
+        lst.add("fisk");
+        query.put("name", lst);
+        List<TaskSummary> tasksByVariousFields = taskService.getTasksByVariousFields(query, true);
+        for (TaskSummary tasksByVariousField : tasksByVariousFields) {
+          System.out.println(" -> #" + tasksByVariousField.getId());
+        }
+      }
+
       TaskSummary task1 = taskService.getTasksAssignedAsPotentialOwner("sales-rep", "en-UK").get(0);
       System.out.println("Sales-rep executing task " + task1.getName() + "(" + task1.getId() + ": " + task1.getDescription() + ")");
       taskService.claim(task1.getId(), "sales-rep");
