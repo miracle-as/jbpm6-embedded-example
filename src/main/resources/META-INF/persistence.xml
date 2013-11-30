@@ -53,14 +53,14 @@
 
     <properties>
       <property name="hibernate.max_fetch_depth" value="3"/>
-      <property name="hibernate.hbm2ddl.auto" value="create" />
-      <property name="hibernate.show_sql" value="false" />
-      <property name="hibernate.dialect" value="org.hibernate.dialect.H2Dialect"/>
+      <property name="hibernate.hbm2ddl.auto" value="update" />
+      <property name="hibernate.show_sql" value="false"/>
+      <property name="hibernate.dialect" value="org.hibernate.dialect.PostgreSQL82Dialect"/>
 
       <!-- BZ 841786: AS7/EAP 6/Hib 4 uses new (sequence) generators which seem to cause problems -->
-      <property name="hibernate.id.new_generator_mappings" value="false" />
+      <property name="hibernate.id.new_generator_mappings" value="false"/>
 
-      <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.BitronixJtaPlatform" />
+      <property name="hibernate.transaction.jta.platform" value="org.hibernate.service.jta.platform.internal.BitronixJtaPlatform"/>
     </properties>
   </persistence-unit>
 

@@ -8,6 +8,9 @@ import org.kie.api.runtime.KieSession;
 import org.kie.api.runtime.manager.RuntimeEngine;
 import org.kie.api.runtime.manager.RuntimeManager;
 import org.kie.api.runtime.process.ProcessInstance;
+import org.kie.api.runtime.process.WorkItem;
+import org.kie.api.runtime.process.WorkItemHandler;
+import org.kie.api.runtime.process.WorkItemManager;
 import org.kie.api.runtime.process.WorkflowProcessInstance;
 import org.kie.api.task.TaskService;
 import org.kie.api.task.model.Comment;
@@ -20,6 +23,8 @@ import org.kie.internal.runtime.manager.RuntimeManagerFactory;
 import org.kie.internal.runtime.manager.context.EmptyContext;
 import org.kie.internal.task.api.UserGroupCallback;
 
+import javax.persistence.EntityManager;
+import javax.persistence.Query;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -29,11 +34,27 @@ import java.util.Properties;
 public class Embedded {
   public static void main(String[] args) {
     System.out.println("Starting jBPM 6");
-
+    RuntimeManager manager = null;
+    RuntimeEngine runtime = null;
     try {
-      RuntimeManager manager = getRuntimeManager("humantask/HumanTask.bpmn");
-      RuntimeEngine runtime = manager.getRuntimeEngine(EmptyContext.get());
+      manager = getRuntimeManager("humantask/HumanTask.bpmn");
+      runtime = manager.getRuntimeEngine(EmptyContext.get());
       KieSession ksession = runtime.getKieSession();
+
+/*
+      ksession.getWorkItemManager().registerWorkItemHandler("SetAttribute", new WorkItemHandler() {
+        @Override
+        public void executeWorkItem(WorkItem workItem, WorkItemManager workItemManager) {
+          System.out.println("executeWorkItem(WorkItem workItem, WorkItemManager workItemManager) { " + workItem + " -> " + workItemManager);
+        }
+
+        @Override
+        public void abortWorkItem(WorkItem workItem, WorkItemManager workItemManager) {
+          System.out.println("abortWorkItem(WorkItem workItem, WorkItemManager workItemManager) { " + workItem + " -> " + workItemManager);
+        }
+      });
+      //System.in.read();
+*/
 
       // start a new process instance
       Map<String, Object> params = new HashMap<String, Object>();
@@ -45,6 +66,9 @@ public class Embedded {
 
       // "sales-rep" reviews request
       TaskService taskService = runtime.getTaskService();
+
+      lookupTasks();
+
 
       if (false) {
         Map<String, List<?>> query = new HashMap<String, List<?>>();
@@ -109,11 +133,34 @@ public class Embedded {
       }
 
 
-      manager.disposeRuntimeEngine(runtime);
     } catch (Throwable t) {
       t.printStackTrace();
+    } finally {
+      if (manager != null) {
+        if (runtime != null) {
+          manager.disposeRuntimeEngine(runtime);
+        }
+        manager.close();
+      }
+
+      System.exit(0);
     }
-    System.exit(0);
+  }
+
+  private static void lookupTasks() {
+    EntityManager entityManager = JbpmHelper.getEntityManagerFactory().createEntityManager();
+    Query query = entityManager.createQuery("select\n" +
+            "    t.id\n" +
+            "from\n" +
+            "    TaskImpl t\n" +
+            "where\n" +
+            "    t.archived = 0");
+    List resultList = query.getResultList();
+    for (Object o : resultList) {
+
+      System.out.println(" - " + o);
+    }
+
   }
 
   private static Object getVariable(ProcessInstance processInstance, String name) {
@@ -132,10 +179,7 @@ public class Embedded {
     properties.setProperty("sales-rep", "sales");
     properties.setProperty("john", "PM");
     UserGroupCallback userGroupCallback = new JBossUserGroupCallbackImpl(properties);
-    RuntimeEnvironment environment = RuntimeEnvironmentBuilder.getDefault()
-            .userGroupCallback(userGroupCallback)
-            .addAsset(ResourceFactory.newClassPathResource(process), ResourceType.BPMN2)
-            .get();
+    RuntimeEnvironment environment = RuntimeEnvironmentBuilder.getDefault().userGroupCallback(userGroupCallback).addAsset(ResourceFactory.newClassPathResource(process), ResourceType.BPMN2).get();
     return RuntimeManagerFactory.Factory.get().newSingletonRuntimeManager(environment);
   }
 }

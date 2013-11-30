@@ -1,6 +1,7 @@
 package jbpmtestjava;
 
 
+import bitronix.tm.BitronixTransactionManager;
 import bitronix.tm.TransactionManagerServices;
 import bitronix.tm.resource.jdbc.PoolingDataSource;
 import org.h2.tools.Server;
@@ -27,6 +28,8 @@ import java.util.Properties;
 
 @Deprecated // Deprecated - se jbpm examples and docs for explanations...
 public class JbpmHelper {
+
+  BitronixTransactionManager transactionManager;
 
   public static void startUp() {
     cleanupSingletonSessionId();
@@ -74,10 +77,7 @@ public class JbpmHelper {
 
   public static TaskService startTaskService() {
     Properties properties = getProperties();
-    String dialect = properties.getProperty("persistence.persistenceunit.dialect", "org.hibernate.dialect.H2Dialect");
-    Map<String, String> map = new HashMap<String, String>();
-    map.put("hibernate.dialect", dialect);
-    EntityManagerFactory emf = Persistence.createEntityManagerFactory(properties.getProperty("taskservice.datasource.name", "org.jbpm.services.task"), map);
+    EntityManagerFactory emf = getEntityManagerFactory(properties);
     System.setProperty("jbpm.user.group.mapping", properties.getProperty("taskservice.usergroupmapping", "classpath:/usergroups.properties"));
 
     TaskService taskService = new HumanTaskConfigurator()
@@ -88,16 +88,28 @@ public class JbpmHelper {
     return taskService;
   }
 
+  public static EntityManagerFactory getEntityManagerFactory() {
+    return getEntityManagerFactory(getProperties());
+  }
+
+  private static EntityManagerFactory getEntityManagerFactory(Properties properties) {
+    String dialect = properties.getProperty("persistence.persistenceunit.dialect", "org.hibernate.dialect.H2Dialect");
+    Map<String, String> map = new HashMap<String, String>();
+    map.put("hibernate.dialect", dialect);
+    return Persistence.createEntityManagerFactory(properties.getProperty("persistence.persistenceunit.name", "org.jbpm.persistence.jpa"), map);
+//    return Persistence.createEntityManagerFactory(properties.getProperty("taskservice.datasource.name", "org.jbpm.services.task"), map);
+  }
+
   public static void registerTaskService(StatefulKnowledgeSession ksession) {
     // no-op HT work item handler is already registered when using RuntimeManager
 
   }
 
-  public static StatefulKnowledgeSession newStatefulKnowledgeSession(KnowledgeBase kbase) {
+  public StatefulKnowledgeSession newStatefulKnowledgeSession(KnowledgeBase kbase) {
     return loadStatefulKnowledgeSession(kbase, -1);
   }
 
-  public static StatefulKnowledgeSession loadStatefulKnowledgeSession(KnowledgeBase kbase, int sessionId) {
+  public StatefulKnowledgeSession loadStatefulKnowledgeSession(KnowledgeBase kbase, int sessionId) {
     Properties properties = getProperties();
     String persistenceEnabled = properties.getProperty("persistence.enabled", "false");
     RuntimeEnvironmentBuilder builder = null;
@@ -108,9 +120,10 @@ public class JbpmHelper {
       EntityManagerFactory emf = Persistence.createEntityManagerFactory(properties.getProperty("persistence.persistenceunit.name", "org.jbpm.persistence.jpa"), map);
 
 
+      transactionManager = TransactionManagerServices.getTransactionManager();
       builder = RuntimeEnvironmentBuilder.getDefault()
               .entityManagerFactory(emf)
-              .addEnvironmentEntry(EnvironmentName.TRANSACTION_MANAGER, TransactionManagerServices.getTransactionManager());
+              .addEnvironmentEntry(EnvironmentName.TRANSACTION_MANAGER, transactionManager);
 
 
     } else {

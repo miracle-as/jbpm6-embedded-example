@@ -1,10 +1,9 @@
 package jbpmtest
 
-import org.kie.api.runtime.manager.RuntimeManager
+import org.kie.api.runtime.manager.{RuntimeManagerFactory, RuntimeEnvironment, RuntimeManager}
 import org.kie.internal.runtime.manager.context.EmptyContext
 import org.kie.internal.io.ResourceFactory
 import org.kie.api.io.ResourceType
-import org.kie.internal.runtime.manager.{RuntimeEnvironment, RuntimeManagerFactory}
 import org.jbpm.runtime.manager.impl.RuntimeEnvironmentBuilder
 import org.kie.api.task.TaskService
 import javax.persistence.{Persistence, EntityManagerFactory}
@@ -13,17 +12,17 @@ import org.jbpm.shared.services.impl.JbpmJTATransactionManager
 import org.kie.internal.runtime.StatefulKnowledgeSession
 import java.util.Properties
 import java.io.{FilenameFilter, File}
-import org.kie.internal.KnowledgeBase
 import org.h2.tools.Server
 
 import org.kie.api.runtime.EnvironmentName
 import bitronix.tm.TransactionManagerServices
 import bitronix.tm.resource.jdbc.PoolingDataSource
 import org.jbpm.services.task.identity.JBossUserGroupCallbackImpl
+import org.kie.internal.KnowledgeBase
 
 object Kie {
 
-  def getRuntimeManager(process: String): RuntimeManager = {
+  def getRuntimeManager(process: Option[String]): RuntimeManager = {
 
 
     val properties = new Properties()
@@ -31,9 +30,13 @@ object Kie {
     properties.setProperty("sales-rep", "sales")
     properties.setProperty("john", "PM")
     val userGroupCallback = new JBossUserGroupCallbackImpl(properties)
+
     val builder = RuntimeEnvironmentBuilder.getDefault
     builder.userGroupCallback(userGroupCallback)
-    builder.addAsset(ResourceFactory.newClassPathResource(process), ResourceType.BPMN2)
+    process.map{ pname =>
+      builder.addAsset(ResourceFactory.newClassPathResource(pname), ResourceType.BPMN2)
+    }
+
     val environment: RuntimeEnvironment = builder.get()
 
     RuntimeManagerFactory.Factory.get().newSingletonRuntimeManager(environment)
@@ -78,14 +81,53 @@ object Kie {
     val properties = getProperties
     // create data source
     val pds = new PoolingDataSource()
+    /*pds.setAcquireIncrement(1)
+    pds.setAllowLocalTransactions(true)
+    pds.setDeferConnectionRelease(true)
+    pds.setAutomaticEnlistingEnabled(true)
+    pds.setAcquisitionTimeout(30)
+    pds.setAcquisitionInterval(1)
+    pds.setMaxPoolSize(5)
+    pds.setPreparedStatementCacheSize(5)
+    pds.setTwoPcOrderingPosition(0)
+    pds.setApplyTransactionTimeout(true)
+    pds.setIgnoreRecoveryFailures(false)
+    pds.setIsolationLevel("READ_COMMITTED")*/
+
     pds.setUniqueName(properties.getProperty("persistence.datasource.name", "jdbc/jbpm-ds"))
-    pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource")
+
     pds.setMaxPoolSize(5)
     pds.setAllowLocalTransactions(true)
-    pds.getDriverProperties.put("user", properties.getProperty("persistence.datasource.user", "sa"))
-    pds.getDriverProperties.put("password", properties.getProperty("persistence.datasource.password", ""))
-    pds.getDriverProperties.put("url", properties.getProperty("persistence.datasource.url", "jdbc:h2:tcp://localhost/~/jbpm-dbMVCC=TRUE"))
-    pds.getDriverProperties.put("driverClassName", properties.getProperty("persistence.datasource.driverClassName", "org.h2.Driver"))
+
+
+    val password = properties.getProperty("persistence.datasource.password", "")
+    val username = properties.getProperty("persistence.datasource.user", "sa")
+
+    val driverProperties: Properties = pds.getDriverProperties
+    val postgresXa = false
+    val postgresBit = true
+    if (postgresXa) {
+      // Some weird jta-error with this :(
+      pds.setClassName("org.postgresql.xa.PGXADataSource")
+
+      driverProperties.setProperty("serverName", "localhost")
+      driverProperties.setProperty("databaseName", "jbpm6test")
+      driverProperties.setProperty("user", username)
+      driverProperties.setProperty("password", password)
+    } else if (postgresBit) {
+      pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource")
+      driverProperties.put("user", username)
+      driverProperties.put("password", password)
+      driverProperties.put("url", properties.getProperty("persistence.datasource.url"))
+      driverProperties.put("driverClassName", properties.getProperty("persistence.datasource.driverClassName"))
+    } else {
+      pds.setClassName("bitronix.tm.resource.jdbc.lrc.LrcXADataSource")
+
+      driverProperties.put("user", username)
+      driverProperties.put("password", password)
+      driverProperties.put("url", properties.getProperty("persistence.datasource.url", "jdbc:h2:tcp://localhost/~/jbpm-dbMVCC=TRUE"))
+      driverProperties.put("driverClassName", properties.getProperty("persistence.datasource.driverClassName", "org.h2.Driver"))
+    }
     pds.init()
     pds
   }
@@ -137,7 +179,7 @@ object Kie {
     }
     builder.knowledgeBase(kbase)
     val manager = RuntimeManagerFactory.Factory.get().newSingletonRuntimeManager(builder.get())
-    return manager.getRuntimeEngine(EmptyContext.get()).getKieSession().asInstanceOf[StatefulKnowledgeSession]
+    manager.getRuntimeEngine(EmptyContext.get()).getKieSession().asInstanceOf[StatefulKnowledgeSession]
   }
 
   /*

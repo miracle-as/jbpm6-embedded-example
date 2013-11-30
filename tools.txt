@@ -1,3 +1,21 @@
 import akka.dataflow._ //to get the flow method and implicit conversions
 import scala.concurrent._
 import scala.concurrent.ExecutionContext.Implicits.global
+
+
+
+
+// JBPM
+import jbpmtest._
+import org.kie.internal.runtime.manager.context.EmptyContext
+import org.kie.internal.runtime.manager.context.EmptyContext
+import org.kie.api.runtime.KieSession
+import org.kie.api.runtime.process.ProcessInstance
+import scala.collection.JavaConversions._
+import org.kie.api.task.model.TaskSummary
+import org.kie.api.event.process.{ProcessCompletedEvent, DefaultProcessEventListener}
+
+Kie.startUp()
+val manager = Kie.getRuntimeManager("bpmn/test.bpmn.xml")
+val runtime = manager.getRuntimeEngine(EmptyContext.get())
+val ksession: KieSession = runtime.getKieSession()
