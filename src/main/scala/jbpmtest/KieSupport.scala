@@ -12,8 +12,10 @@ import javax.transaction.UserTransaction
 import java.util.Hashtable
 import javax.naming.InitialContext
 import java.util
-import org.kie.api.task.model.{TaskSummary, I18NText}
+import org.kie.api.task.model.{Task, Content, TaskSummary, I18NText}
 import bitronix.tm.{BitronixTransactionManager, TransactionManagerServices}
+import org.jbpm.services.task.utils.ContentMarshallerHelper
+import org.kie.api.task.TaskService
 
 
 trait KieSupport {
@@ -89,9 +91,24 @@ trait KieSupport {
     ctx
   }
 
+  def loadContent(task: Task)(implicit taskService: TaskService): AnyRef = {
+    val content: Content = taskService.getContentById(task.getTaskData.getDocumentContentId)
+    ContentMarshallerHelper.unmarshall(content.getContent, null)
+  }
+
   def dump(list: util.List[I18NText]): String = list.map {i18ntext => i18ntext.getText}.mkString
 
-  def dumpTaskSummary(taskSummary: TaskSummary): String = "{TaskSummary name=" + taskSummary.getName + " - description=" + taskSummary.getDescription + " - subject=" + taskSummary.getSubject + "}"
+  def dumpAny(any: AnyRef): String = any match {
+    case map: java.util.Map[_, _] => "map: " + dumpMap(map)
+    case _ => s"any (#{any.getClass}): #{any}"
+  }
+
+
+  def dumpMap(map:java.util.Map[_,_]): String = {
+    map.mkString("[", ",\n", "]")
+  }
+
+  def dumpTaskSummary(taskSummary: TaskSummary): String = s"""{TaskSummary name=${taskSummary.getName} - description=${taskSummary.getDescription} - subject=${taskSummary.getSubject} }"""
 
   def dumpTaskSummaries(list: List[TaskSummary]): String = list.map(dumpTaskSummary).mkString
 }

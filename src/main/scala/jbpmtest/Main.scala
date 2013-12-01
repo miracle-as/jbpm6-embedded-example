@@ -4,7 +4,8 @@ import org.kie.internal.runtime.manager.context.EmptyContext
 import org.kie.api.runtime.KieSession
 import org.kie.api.runtime.process.{WorkflowProcessInstance, ProcessInstance}
 import scala.collection.JavaConversions._
-import org.kie.api.task.model.Status
+import org.kie.api.task.model._
+import scala.Some
 
 object Main extends App with KieSupport {
 
@@ -12,7 +13,8 @@ object Main extends App with KieSupport {
   println("run")
 
   Kie.startUp()
-  val manager = Kie.getRuntimeManager(Some("bpmn/test.bpmn.xml"))
+  val manager = Kie.getRuntimeManager(Some("bpmn/New Process.bpmn2"))
+  //  val manager = Kie.getRuntimeManager(Some("bpmn/test.bpmn.xml"))
   val runtime = manager.getRuntimeEngine(EmptyContext.get())
   //  runtime.getTaskService.getTasksByProcessInstanceId()
   implicit val ksession: KieSession = runtime.getKieSession
@@ -26,10 +28,14 @@ object Main extends App with KieSupport {
       })
   */
 
-    ksession.setGlobal("globalHelper", new Helper("yyyyMMddHHmmss'Z'"))
+  if (false) ksession.setGlobal("globalHelper", new Helper("yyyyMMddHHmmss'Z'"))
   //  runtime.setVariable("helper", Helper)
 
-  val params = Map[String,AnyRef]("userId" -> "testparma",
+  val params = Map[String, AnyRef]("userId" -> "testparma",
+    "localVar1" -> "john",
+    "localVar2" -> "other value ",
+    "processVar1" -> "pv 1",
+    "processVar2" -> "pv 2",
     "someDate" -> new java.util.Date(),
     "someDateFormatted" -> "SDF-input",
     "helper" -> Helper)
@@ -37,14 +43,15 @@ object Main extends App with KieSupport {
   //  var pi: ProcessInstance = ksession.getProcessInstance(1)
   println("starting process ")
 
-  var pi: ProcessInstance = ksession.startProcess("com.sample.HelloWorld", params)
+  var pi: ProcessInstance = ksession.startProcess("defaultPackage.New_Process", params)
+  //  var pi: ProcessInstance = ksession.startProcess("com.sample.HelloWorld", params)
   println(s"run $pi")
   //  }
-  val map = listVariables(pi.getId)
-  println(s"variable $map")
+  val map = dumpMap(listVariables(pi.getId))
+  println(s"\nvariable $map")
 
 
-  println(s"task state ${pi.getStateName}")
+  println(s"\ntask state ${pi.getStateName}")
 
   def varUserId(pi: ProcessInstance)(varName: String) = pi.asInstanceOf[WorkflowProcessInstance].getVariable(varName)
 
@@ -53,32 +60,50 @@ object Main extends App with KieSupport {
   println(s"task state ${getvar("someDateFormatted")}")
   println(s"task state ${getvar("someDate")}")
   // println(s" descr ${task)
-  val taskService = runtime.getTaskService()
+  implicit val taskService = runtime.getTaskService()
 
   import Status._
 
   val lst = List(Created, Ready, Reserved, InProgress, Suspended, Completed, Failed, Error, Exited, Obsolete)
 
-//  val taskSummaries = taskService.getTasksByStatusByProcessInstanceId(pi.getId, lst, "US-en")
-  val taskSummaries  = taskService.getTasksAssignedAsPotentialOwner("sales-rep", "en-UK")
-  println("task summaries "+taskSummaries.size)
+  //    val taskSummaries = taskService.getTasksByStatusByProcessInstanceId(pi.getId, lst, "en-UK")
+  val taskSummaries = taskService.getTasksAssignedAsPotentialOwner("john", "en-UK")
+  println("\ntask summaries " + taskSummaries.size)
   println(dumpTaskSummaries(taskSummaries.toList))
 
+
+  val summary = taskSummaries.head
+  println("\nowners ? " + Option(summary.getPotentialOwners).map(_.map(o => Option(o)).mkString))
+  val headSummaryId = summary.getId
+
+  val tasksForPi = taskService.getTasksByProcessInstanceId(pi.getId)
+
+  val head: Long = tasksForPi.head
+
+  println(s"$headSummaryId==$head ?")
+
+  val task: Task = taskService.getTaskById(head)
+  val data: TaskData = task.getTaskData
+
+  val result = loadContent(task)
+  println("\ncontent: " + dumpAny(result))
+
+  println("\nstarting task")
+  taskService.start(headSummaryId, "john")
+
+  println("\ncompleting task")
+  val completeMap = Map[String, AnyRef]("output1" -> "output1 set on complete", "output2" -> "output2 set on complete")
+  taskService.complete(headSummaryId, "john", completeMap)
+
+
+  val map3 = dumpMap(listVariables(pi.getId))
+  println(s"\nvariables post complete  $map3")
+
+  val result2 = loadContent(task)
+  println("\ncontent complete: " + dumpAny(result2))
+
+
   if (false) {
-
-    val tasksForPi = taskService.getTasksByProcessInstanceId(pi.getId)
-
-    /*
-        private val head: Long = tasksForPi.head
-
-        private val task: Task = taskService.getTaskById(head)
-
-        println("task " + task.getNames().mkString + "(" + task.getId() + ": " + dump(task.getDescriptions()) + ")")
-        println(" task initiator " + task.getPeopleAssignments.getTaskInitiator)
-        println(" task assignables " + task.getPeopleAssignments.getPotentialOwners.mkString)
-    */
-
-
     val pi2 = Option(ksession.getProcessInstance(pi.getId))
     println("new state " + pi2.map(_.getStateName).getOrElse("#null#"))
 

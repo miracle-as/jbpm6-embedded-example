@@ -7,7 +7,7 @@
   <bpmn2:process id="com.sample.HelloWorld" tns:version="1" tns:packageName="defaultPackage" tns:adHoc="false" name="Hello World" isExecutable="true" processType="Private">
     <bpmn2:extensionElements>
       <tns:import name="java.text.SimpleDateFormat"/>
-      <tns:global id="GlobalType_1" identifier="globalHelper" type="jbpmtest.Helper"/>
+      <tns:global identifier="globalHelper" type="jbpmtest.Helper"/>
       <tns:import name="jbpmtest.Helper$"/>
       <tns:import name="jbpmtest.Helper"/>
     </bpmn2:extensionElements>
@@ -15,16 +15,19 @@
     <bpmn2:property id="someDateLocaleFormatted" itemSubjectRef="_resultManagerItem"/>
     <bpmn2:property id="someDate" itemSubjectRef="_someDate"/>
     <bpmn2:property id="someDateFormatted" itemSubjectRef="_resultManagerItem"/>
+    <bpmn2:property id="localVar1" itemSubjectRef="_resultManagerItem"/>
+    <bpmn2:property id="localVar2" itemSubjectRef="_resultManagerItem"/>
     <bpmn2:startEvent id="_1" name="StartProcess">
+      <bpmn2:documentation id="Documentation_4">procesdef doc</bpmn2:documentation>
       <bpmn2:outgoing>_1-_2</bpmn2:outgoing>
     </bpmn2:startEvent>
-    <bpmn2:sequenceFlow id="_1-_2" tns:priority="1" sourceRef="_1" targetRef="_2"/>
+    <bpmn2:sequenceFlow id="_1-_2" tns:priority="1" name="" sourceRef="_1" targetRef="_2"/>
     <bpmn2:endEvent id="_4" name="EndProcess">
       <bpmn2:incoming>_3-w_4</bpmn2:incoming>
       <bpmn2:terminateEventDefinition id="TerminateEventDefinition_1"/>
     </bpmn2:endEvent>
     <bpmn2:userTask id="_3" name="Review">
-      <bpmn2:documentation id="Documentation_6">testdoc2</bpmn2:documentation>
+      <bpmn2:documentation id="Documentation_6">testdoc ut1</bpmn2:documentation>
       <bpmn2:extensionElements>
         <tns:onEntry-script scriptFormat="http://www.java.com/java">
           <tns:script>System.out.println(&quot;--x->&quot;);</tns:script>
@@ -40,18 +43,33 @@
         <bpmn2:dataInput id="DataInput_47" name="TaskName"/>
         <bpmn2:dataInput id="DataInput_75" name="GroupId"/>
         <bpmn2:dataInput id="DataInput_77" name="Content"/>
+        <bpmn2:dataInput id="DataInput_104" itemSubjectRef="_resultManagerItem" name="input1"/>
+        <bpmn2:dataInput id="DataInput_114" itemSubjectRef="_resultManagerItem" name="description"/>
+        <bpmn2:dataInput id="DataInput_130" itemSubjectRef="_someDate" name="input2"/>
+        <bpmn2:dataInput id="DataInput_131" itemSubjectRef="_resultManagerItem" name="input3"/>
+        <bpmn2:dataOutput id="DataOutput_2" itemSubjectRef="_resultManagerItem" name="description"/>
+        <bpmn2:dataOutput id="DataOutput_3" itemSubjectRef="_resultManagerItem" name="output1"/>
+        <bpmn2:dataOutput id="DataOutput_4" itemSubjectRef="_resultManagerItem" name="output2"/>
         <bpmn2:inputSet id="InputSet_1">
           <bpmn2:dataInputRefs>DataInput_49</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_47</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_75</bpmn2:dataInputRefs>
           <bpmn2:dataInputRefs>DataInput_77</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_104</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_114</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_130</bpmn2:dataInputRefs>
+          <bpmn2:dataInputRefs>DataInput_131</bpmn2:dataInputRefs>
         </bpmn2:inputSet>
-        <bpmn2:outputSet id="OutputSet_1"/>
+        <bpmn2:outputSet id="OutputSet_1">
+          <bpmn2:dataOutputRefs>DataOutput_2</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>DataOutput_3</bpmn2:dataOutputRefs>
+          <bpmn2:dataOutputRefs>DataOutput_4</bpmn2:dataOutputRefs>
+        </bpmn2:outputSet>
       </bpmn2:ioSpecification>
       <bpmn2:dataInputAssociation id="DataInputAssociation_54">
         <bpmn2:targetRef>DataInput_49</bpmn2:targetRef>
         <bpmn2:assignment id="Assignment_51">
-          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_102">Hello #{someDate} and #{someDateFormatted} and2 #{someDateLocaleFormatted} &lt;</bpmn2:from>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_102">Hello #{someDate} and #{someDateFormatted} and2 #{someDateLocaleFormatted} and3 #{input1} </bpmn2:from>
           <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_101">DataInput_49</bpmn2:to>
         </bpmn2:assignment>
       </bpmn2:dataInputAssociation>
@@ -68,21 +86,50 @@
       <bpmn2:dataInputAssociation id="DataInputAssociation_82">
         <bpmn2:targetRef>DataInput_77</bpmn2:targetRef>
         <bpmn2:assignment id="Assignment_79">
-          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_158">Hello #{someDate} and #{someDateFormatted} and2 #{someDateLocaleFormatted} &lt; CONTENT</bpmn2:from>
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_158">['Bob' : '#{someDate}', 'Michael' : 'Person Michael']</bpmn2:from>
           <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_157">DataInput_77</bpmn2:to>
         </bpmn2:assignment>
       </bpmn2:dataInputAssociation>
-      <bpmn2:potentialOwner id="PotentialOwner_1">
-        <bpmn2:resourceAssignmentExpression id="ResourceAssignmentExpression_1"/>
-      </bpmn2:potentialOwner>
-      <bpmn2:potentialOwner id="PotentialOwner_2">
-        <bpmn2:resourceAssignmentExpression id="ResourceAssignmentExpression_2">
-          <bpmn2:formalExpression id="FormalExpression_187" language="http://www.mvel.org/2.0">&quot;john&quot;</bpmn2:formalExpression>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_109">
+        <bpmn2:sourceRef>someDateLocaleFormatted</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_104</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_119">
+        <bpmn2:targetRef>DataInput_114</bpmn2:targetRef>
+        <bpmn2:assignment id="Assignment_115">
+          <bpmn2:from xsi:type="bpmn2:tFormalExpression" id="FormalExpression_231" language="http://www.mvel.org/2.0">X#{globalHelper.formatDate(someDate)}XX</bpmn2:from>
+          <bpmn2:to xsi:type="bpmn2:tFormalExpression" id="FormalExpression_230">DataInput_114</bpmn2:to>
+        </bpmn2:assignment>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_135">
+        <bpmn2:sourceRef>someDate</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_130</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataInputAssociation id="DataInputAssociation_136">
+        <bpmn2:sourceRef>someDateFormatted</bpmn2:sourceRef>
+        <bpmn2:targetRef>DataInput_131</bpmn2:targetRef>
+      </bpmn2:dataInputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_4">
+        <bpmn2:sourceRef>DataOutput_2</bpmn2:sourceRef>
+        <bpmn2:targetRef>someDateLocaleFormatted</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_5">
+        <bpmn2:sourceRef>DataOutput_3</bpmn2:sourceRef>
+        <bpmn2:targetRef>localVar1</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:dataOutputAssociation id="DataOutputAssociation_6">
+        <bpmn2:sourceRef>DataOutput_4</bpmn2:sourceRef>
+        <bpmn2:targetRef>localVar2</bpmn2:targetRef>
+      </bpmn2:dataOutputAssociation>
+      <bpmn2:potentialOwner id="PotentialOwner_3">
+        <bpmn2:resourceAssignmentExpression id="ResourceAssignmentExpression_3">
+          <bpmn2:formalExpression id="FormalExpression_298" language="http://www.java.com/java">#{localVar1}</bpmn2:formalExpression>
         </bpmn2:resourceAssignmentExpression>
       </bpmn2:potentialOwner>
     </bpmn2:userTask>
-    <bpmn2:sequenceFlow id="_3-w_4" tns:priority="1" sourceRef="_3" targetRef="_4"/>
+    <bpmn2:sequenceFlow id="_3-w_4" tns:priority="1" name="" sourceRef="_3" targetRef="_4"/>
     <bpmn2:scriptTask id="_2" name="Hello" scriptFormat="http://www.java.com/java">
+      <bpmn2:documentation id="Documentation_9">testdoc st1</bpmn2:documentation>
       <bpmn2:incoming>_1-_2</bpmn2:incoming>
       <bpmn2:outgoing>_2-_3</bpmn2:outgoing>
       <bpmn2:script>
@@ -104,11 +151,12 @@ kcontext.setVariable(&quot;someDateFormatted&quot;, &quot;script added &quot;+kc
         
       </bpmn2:script>
     </bpmn2:scriptTask>
-    <bpmn2:sequenceFlow id="_2-_3" tns:priority="1" sourceRef="_2" targetRef="ScriptTask_2"/>
+    <bpmn2:sequenceFlow id="_2-_3" tns:priority="1" name="" sourceRef="_2" targetRef="ScriptTask_2"/>
     <bpmn2:scriptTask id="ScriptTask_2" name="Script Task 2" scriptFormat="http://www.mvel.org/2.0">
+      <bpmn2:documentation id="Documentation_3">userdoc st2</bpmn2:documentation>
       <bpmn2:incoming>_2-_3</bpmn2:incoming>
       <bpmn2:outgoing>SequenceFlow_1</bpmn2:outgoing>
-      <bpmn2:script>someDateLocaleFormatted = &quot;fishy&quot;
+      <bpmn2:script>kcontext.setVariable(&quot;someDateLocaleFormatted&quot;, &quot;fishy&quot; # globalHelper.formatDate(someDate))
         
       </bpmn2:script>
     </bpmn2:scriptTask>
@@ -128,6 +176,9 @@ kcontext.setVariable(&quot;someDateFormatted&quot;, &quot;script added &quot;+kc
       <bpmndi:BPMNShape id="BPMNShape_EndEvent_1" bpmnElement="_4">
         <dc:Bounds height="36.0" width="36.0" x="700.0" y="87.0"/>
       </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_3" bpmnElement="ScriptTask_2">
+        <dc:Bounds height="50.0" width="110.0" x="330.0" y="80.0"/>
+      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_1" bpmnElement="_1-_2" sourceElement="BPMNShape_StartEvent_1" targetElement="BPMNShape_ScriptTask_1">
         <di:waypoint xsi:type="dc:Point" x="86.0" y="105.0"/>
         <di:waypoint xsi:type="dc:Point" x="140.0" y="105.0"/>
@@ -140,9 +191,6 @@ kcontext.setVariable(&quot;someDateFormatted&quot;, &quot;script added &quot;+kc
         <di:waypoint xsi:type="dc:Point" x="620.0" y="106.0"/>
         <di:waypoint xsi:type="dc:Point" x="700.0" y="105.0"/>
       </bpmndi:BPMNEdge>
-      <bpmndi:BPMNShape id="BPMNShape_ScriptTask_3" bpmnElement="ScriptTask_2">
-        <dc:Bounds height="50.0" width="110.0" x="330.0" y="80.0"/>
-      </bpmndi:BPMNShape>
       <bpmndi:BPMNEdge id="BPMNEdge_SequenceFlow_4" bpmnElement="SequenceFlow_1" sourceElement="BPMNShape_ScriptTask_3" targetElement="BPMNShape_UserTask_1">
         <di:waypoint xsi:type="dc:Point" x="440.0" y="105.0"/>
         <di:waypoint xsi:type="dc:Point" x="460.0" y="106.0"/>
