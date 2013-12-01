@@ -9,6 +9,7 @@ import scala.Some
 
 object Main extends App with KieSupport {
 
+  val Language = "en-UK"
 
   println("run")
 
@@ -67,7 +68,7 @@ object Main extends App with KieSupport {
   val lst = List(Created, Ready, Reserved, InProgress, Suspended, Completed, Failed, Error, Exited, Obsolete)
 
   //    val taskSummaries = taskService.getTasksByStatusByProcessInstanceId(pi.getId, lst, "en-UK")
-  val taskSummaries = taskService.getTasksAssignedAsPotentialOwner("john", "en-UK")
+  val taskSummaries = taskService.getTasksAssignedAsPotentialOwner("john", Language)
   println("\ntask summaries " + taskSummaries.size)
   println(dumpTaskSummaries(taskSummaries.toList))
 
@@ -91,32 +92,36 @@ object Main extends App with KieSupport {
   println("\nstarting task")
   taskService.start(headSummaryId, "john")
 
-  println("\ncompleting task")
-  val completeMap = Map[String, AnyRef]("output1" -> "output1 set on complete", "output2" -> "output2 set on complete")
-  taskService.complete(headSummaryId, "john", completeMap)
+  val completeIt=false
+  if (completeIt) {
+
+    println("\ncompleting task")
+    val completeMap = Map[String, AnyRef]("output1" -> "output1 set on complete", "output2" -> "output2 set on complete")
+    taskService.complete(headSummaryId, "john", completeMap)
 
 
-  val map3 = dumpMap(listVariables(pi.getId))
-  println(s"\nvariables post complete  $map3")
+    val map3 = dumpMap(listVariables(pi.getId))
+    println(s"\nvariables post complete  $map3")
 
-  val result2 = loadContent(task)
-  println("\ncontent complete: " + dumpAny(result2))
-
-
-  if (false) {
-    val pi2 = Option(ksession.getProcessInstance(pi.getId))
-    println("new state " + pi2.map(_.getStateName).getOrElse("#null#"))
-
-    if (pi2.isDefined) {
-      println(s"task state ended ${varUserId(pi2.get)("userId")}")
-    }
+    val result2 = loadContent(task)
+    println("\ncontent complete: " + dumpAny(result2))
 
 
-    val pi3 = Option(ksession.getProcessInstance(pi.getId))
-    println("new state " + pi3.map(_.getStateName).getOrElse("#null#"))
+    if (false) {
+      val pi2 = Option(ksession.getProcessInstance(pi.getId))
+      println("new state " + pi2.map(_.getStateName).getOrElse("#null#"))
 
-    if (pi3.isDefined) {
-      println(s"task state ended ${varUserId(pi3.get)("userId")}")
+      if (pi2.isDefined) {
+        println(s"task state ended ${varUserId(pi2.get)("userId")}")
+      }
+
+
+      val pi3 = Option(ksession.getProcessInstance(pi.getId))
+      println("new state " + pi3.map(_.getStateName).getOrElse("#null#"))
+
+      if (pi3.isDefined) {
+        println(s"task state ended ${varUserId(pi3.get)("userId")}")
+      }
     }
   }
 

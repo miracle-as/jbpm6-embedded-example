@@ -33,8 +33,9 @@ object Kie {
 
     val builder = RuntimeEnvironmentBuilder.getDefault
     builder.userGroupCallback(userGroupCallback)
-    process.map{ pname =>
-      builder.addAsset(ResourceFactory.newClassPathResource(pname), ResourceType.BPMN2)
+    process.map {
+      pname =>
+        builder.addAsset(ResourceFactory.newClassPathResource(pname), ResourceType.BPMN2)
     }
 
     val environment: RuntimeEnvironment = builder.get()
@@ -132,7 +133,9 @@ object Kie {
     pds
   }
 
-  def startTaskService: TaskService = {
+  def startTaskService: TaskService = startTaskServiceWithEmf._1
+
+  def startTaskServiceWithEmf: (TaskService, EntityManagerFactory) = {
     val properties = getProperties
     val dialect = properties.getProperty("persistence.persistenceunit.dialect", "org.hibernate.dialect.H2Dialect")
     val map = new java.util.HashMap[String, String]()
@@ -146,7 +149,7 @@ object Kie {
       //      .userGroupCallback(getUserGroupCallback())
       .transactionManager(new JbpmJTATransactionManager())
       .getTaskService()
-    taskService
+    (taskService, emf)
   }
 
   def registerTaskService(ksession: StatefulKnowledgeSession) {

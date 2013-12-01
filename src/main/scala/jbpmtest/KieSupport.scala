@@ -4,7 +4,6 @@ import org.kie.api.runtime.process.{WorkflowProcessInstance, ProcessInstance}
 import org.kie.api.runtime.KieSession
 import org.kie.internal.command.Context
 import org.drools.core.command.impl.{KnowledgeCommandContext, GenericCommand}
-import scala.Predef.String
 import scala.collection.JavaConversions._
 import org.jbpm.process.core.context.variable.VariableScope
 import org.jbpm.process.instance.context.variable.VariableScopeInstance
@@ -16,6 +15,9 @@ import org.kie.api.task.model.{Task, Content, TaskSummary, I18NText}
 import bitronix.tm.{BitronixTransactionManager, TransactionManagerServices}
 import org.jbpm.services.task.utils.ContentMarshallerHelper
 import org.kie.api.task.TaskService
+import javax.persistence.EntityManager
+import org.hibernate.SQLQuery
+import scala.util.matching.Regex.Match
 
 
 trait KieSupport {
@@ -104,11 +106,36 @@ trait KieSupport {
   }
 
 
-  def dumpMap(map:java.util.Map[_,_]): String = {
+  def dumpMap(map: java.util.Map[_, _]): String = {
     map.mkString("[", ",\n", "]")
   }
 
   def dumpTaskSummary(taskSummary: TaskSummary): String = s"""{TaskSummary name=${taskSummary.getName} - description=${taskSummary.getDescription} - subject=${taskSummary.getSubject} }"""
 
   def dumpTaskSummaries(list: List[TaskSummary]): String = list.map(dumpTaskSummary).mkString
+
+  def extractNamedQueryString(em: EntityManager, queryName: String): String = {
+    // see: http://stackoverflow.com/questions/4120388/hibernate-named-query-order-by-parameter
+    val tmpQuery = em.createNamedQuery(queryName)
+    //    val sqlQuery = tmpQuery.unwrap(classOf[SQLQuery])
+    /*For JPA 2 with Hibernate 4, I use org.hibernate.Query sqlQuery = tmpQuery.unwrap(org.hibernate.Query.class); to avoid java.lang.ClassCastException: org.hibernate.internal.QueryImpl cannot be cast to org.hibernate.SQLQuery. –  Arjan Dec 7 '12 at 13:58*/
+    val sqlQuery = tmpQuery.unwrap(classOf[org.hibernate.internal.QueryImpl])
+    val queryString = sqlQuery.getQueryString
+    queryString
+  }
+
+  val matcher = """(?s)^(.+)order\s+by.*$""".r
+
+  def chopOrder(sql:String) = {
+    val trim: String = sql
+    println(trim)
+    val in = matcher.findFirstMatchIn(trim)
+    val map = in.map {
+      mmatch =>
+        mmatch.group(1)
+    }
+    map.getOrElse(sql)
+  }
+
+
 }
