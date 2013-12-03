@@ -13,9 +13,14 @@ object Main extends App with KieSupport {
 
   println("run")
 
+  val (presource, pname, includeGlobal) = if (true)
+    ("bpmn/test.bpmn.xml", "com.sample.HelloWorld", true)
+  else
+    ("bpmn/New Process.bpmn2", "defaultPackage.New_Process", false)
+
+
   Kie.startUp()
-  val manager = Kie.getRuntimeManager(Some("bpmn/New Process.bpmn2"))
-  //  val manager = Kie.getRuntimeManager(Some("bpmn/test.bpmn.xml"))
+  val manager = Kie.getRuntimeManager(Some(presource))
   val runtime = manager.getRuntimeEngine(EmptyContext.get())
   //  runtime.getTaskService.getTasksByProcessInstanceId()
   implicit val ksession: KieSession = runtime.getKieSession
@@ -29,7 +34,7 @@ object Main extends App with KieSupport {
       })
   */
 
-  if (false) ksession.setGlobal("globalHelper", new Helper("yyyyMMddHHmmss'Z'"))
+  if (includeGlobal) ksession.setGlobal("globalHelper", new Helper("yyyyMMddHHmmss'Z'"))
   //  runtime.setVariable("helper", Helper)
 
   val params = Map[String, AnyRef]("userId" -> "testparma",
@@ -44,8 +49,7 @@ object Main extends App with KieSupport {
   //  var pi: ProcessInstance = ksession.getProcessInstance(1)
   println("starting process ")
 
-  var pi: ProcessInstance = ksession.startProcess("defaultPackage.New_Process", params)
-  //  var pi: ProcessInstance = ksession.startProcess("com.sample.HelloWorld", params)
+  var pi: ProcessInstance = ksession.startProcess(pname, params)
   println(s"run $pi")
   //  }
   val map = dumpMap(listVariables(pi.getId))
@@ -92,7 +96,7 @@ object Main extends App with KieSupport {
   println("\nstarting task")
   taskService.start(headSummaryId, "john")
 
-  val completeIt=false
+  val completeIt = false
   if (completeIt) {
 
     println("\ncompleting task")

@@ -30,7 +30,9 @@
       <bpmn2:documentation id="Documentation_6">testdoc ut1</bpmn2:documentation>
       <bpmn2:extensionElements>
         <tns:onEntry-script scriptFormat="http://www.java.com/java">
-          <tns:script>System.out.println(&quot;--x->&quot;);</tns:script>
+          <tns:script>System.out.println(&quot;--x->&quot;);
+          System.out.println(&quot;inspect kcontext: &quot;+ globalHelper.inspect(kcontext));
+          </tns:script>
         </tns:onEntry-script>
         <tns:onExit-script scriptFormat="http://www.java.com/java">
           <tns:script>System.out.println(&quot;--->&quot;);</tns:script>
@@ -134,19 +136,7 @@
       <bpmn2:outgoing>_2-_3</bpmn2:outgoing>
       <bpmn2:script>
         System.out.println(&quot;Hello Wxorld &quot;+kcontext.getVariable(&quot;userId&quot;));
-kcontext.setVariable(&quot;someDateFormatted&quot;, &quot;script added &quot;+kcontext.getVariable(&quot;someDateFormatted&quot;));
-        
-        System.out.println(&quot;Some date &quot; + helper.format(someDate));
-        System.out.println(&quot;Some date with global &quot; + globalHelper.formatDate(someDate));
-        
-        
 
-        
-        
-        
-      
-
-        
         
         
       </bpmn2:script>
